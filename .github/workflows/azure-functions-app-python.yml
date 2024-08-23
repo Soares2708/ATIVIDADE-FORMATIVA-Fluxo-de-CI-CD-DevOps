@@ -49,9 +49,21 @@ jobs:
     - name: 'Resolve Project Dependencies Using Pip'
       shell: bash
       run: |
-        pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt --target=".python_packages/lib/site-packages"
+        # Ensure the path is correct
+        if [ -d "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}" ]; then
+          pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+        else
+          echo "Directory not found: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}"
+          exit 1
+        fi
+        # Check if requirements.txt exists
+        if [ -f "requirements.txt" ]; then
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt --target=".python_packages/lib/site-packages"
+        else
+          echo "requirements.txt not found"
+          exit 1
+        fi
         popd
 
     - name: 'Run Azure Functions Action'
